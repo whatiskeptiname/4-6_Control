@@ -6,66 +6,74 @@
         6 : Left
     For speed you can provide any data greater than 10 and less than 255
 */
-
-#define en0 6
-#define t0 7
+// listed numeric valued defines the pin in the arduino board
+// they are defined but not used as the variable but as integer themself 
+#define en0 6 // for PWM (speed) of motror 0
+#define t0 7 // motor 0
 #define t1 8
-#define t2 9
+#define t2 9 // motro 
 #define t3 10
-#define en1 11
+#define en1 11 // for PWM (speed) of motor 1
 
-bool t[4] = {0, 0, 0, 0};
-unsigned int spd = 0, k = 8, data=0, i, j;
+bool t[4] = {0, 0, 0, 0}; // booleand array for motor driver terminals
+unsigned int spd = 0, data=0; // variables for speed, serial data in interger
+String temp_data; // variable for data to be sent via serial communication
 
-void setup()
+void setup() // setup function
 {
-    for (i = 6; i <= 11; i++)
+    for (int i = 6; i <= 11; i++) // set 6-11 number pins as output 
     {
         pinMode(i, OUTPUT);
     }
-    Serial.begin(9600);
+    Serial.begin(115200); // set serial communication at 115200bps
 }
 
-inline void get_data()
+inline void get_data() // get data from serial communication
 {
-    if (Serial.available() > 0)
-        data = Serial.read();
-    else
-        data = 0;
-}
-
-void manipulate(unsigned int data)
-{
-    if (data <= 10)
+    data = 0; // set data to 0 by default 
+    if (Serial.available() > 0) 
     {
-        for (i = 0; i < 4; i++)
+    temp_data = Serial.read(); // read data from serial communication
+    data = temp_data.toInt(); // convert data to integer
+    Serial.println(data); // print data on serial communication
+    }
+}   
+
+void manipulate(unsigned int data) // function to convert data to speed or motor direction control sginal
+{
+    if (data <= 10) // if data is less than 10, then use it as motor control signal
+    {   int k = 8; // set k to 8 as refrence bit string of 00001000
+        for (int i = 0; i < 4; i++)
         {
-            t[i] = k >> i & data;
+            // right shift the 00001000 by the i value and bitwise AND  it with serial data to get the bit value of lower nibble (4-i)th bit
+            t[i] = (k >> i) & data;
             Serial.print(t[i]);
         }
         Serial.print("  ");
         Serial.println(spd);
     }
-    else
+    else // if the data is greater than 10, then use it as speed (PWM) value
     {
         spd=data;
         Serial.println(spd);
     }
 }
 
-void mobilize(bool t[], unsigned int spd)
+void mobilize(bool t[], unsigned int spd) // function to control the motor driver terminals
 {
-    for (i = 6; i <= 11; i+6)
+    for (int i = 6; i <= 11; i+6) // set = 8t PWM value for en0 and en1 pins
         analogWrite(i, spd);
 
-    for (i = 0, j = 7; i < 4; i++, j++)
+    int j = 7;
+    for (int i = 0; i < 4; i++) // write t[i] to the pin j in motor driver
         digitalWrite(j, t[i]);
+        j++;
 }
 
 void loop()
 {
-    get_data();
-    manipulate(data);
-    mobilize(t,spd);
-    delay(1000);
+    get_data(); // get data from serial communication
+    manipulate(data); // convert data to speed or motor direction control sginal
+    mobilize(t,spd); // control the motor driver terminals and as a whole the bot
+    delay(1000); // read signal after every 1 second
 }
