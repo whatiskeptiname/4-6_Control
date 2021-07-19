@@ -58,6 +58,11 @@ void manipulate(unsigned int data) // function to convert data to speed or motor
     else // if the data is greater than 10, then use it as speed (PWM) value
     {
         spd=data;
+        for (int i = 0; i < 4; i++)
+        {
+            Serial.print(t[i]);
+        }
+        Serial.print("  ");
         Serial.println(spd);
     }
 }
