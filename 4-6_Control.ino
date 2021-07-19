@@ -21,10 +21,13 @@ String temp_data; // variable for data to be sent via serial communication
 
 void setup() // setup function
 {
-    for (int i = 6; i <= 11; i++) // set 6-11 number pins as output 
-    {
-        pinMode(i, OUTPUT);
-    }
+    pinMode(en0, OUTPUT);
+    pinMode(t0, OUTPUT);
+    pinMode(t1, OUTPUT);
+    pinMode(t2, OUTPUT);
+    pinMode(t3, OUTPUT);
+    pinMode(en1, OUTPUT);
+    
     Serial.begin(115200); // set serial communication at 115200bps
 }
 
@@ -61,13 +64,15 @@ void manipulate(unsigned int data) // function to convert data to speed or motor
 
 void mobilize(bool t[], unsigned int spd) // function to control the motor driver terminals
 {
-    for (int i = 6; i <= 11; i+6) // set = 8t PWM value for en0 and en1 pins
-        analogWrite(i, spd);
+    // set = 8t PWM value for en0 and en1 pins
+    analogWrite(en0, spd);
+    analogWrite(en1, spd);
 
-    int j = 7;
-    for (int i = 0; i < 4; i++) // write t[i] to the pin j in motor driver
-        digitalWrite(j, t[i]);
-        j++;
+    // write t[i] to the pin j in motor driver
+    digitalWrite(t0, t[0]);
+    digitalWrite(t1, t[1]);
+    digitalWrite(t2, t[2]);
+    digitalWrite(t3, t[3]);
 }
 
 void loop()
